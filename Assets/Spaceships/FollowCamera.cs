@@ -11,24 +11,42 @@ public class FollowCamera : MonoBehaviour
 
 	public bool UseSphereLerp = false;
 
+	public bool UseLateUpdate = false;
+
 	void Start()
 	{
 
 	}
 
+	private void UpdateCamera(float t)
+	{
+		if (UseSphereLerp)
+		{
+			transform.position = Vector3.Slerp(transform.position, Target.position + Target.TransformDirection(Offset), t * CatchupTime);
+		}
+		else
+		{
+			transform.position = Vector3.Lerp(transform.position, Target.position + Target.TransformDirection(Offset), t * CatchupTime);
+		}
+
+		//var d = Target.position - transform.position;
+		//transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(d), Time.deltaTime * 1);
+		transform.LookAt(Target);
+	}
+
 	void Update()
 	{
-		//if (UseSphereLerp)
-		//{
-		//	transform.position = Vector3.Slerp(transform.position, Target.position + Offset, Time.deltaTime * CatchupTime);
-		//}
-		//else
-		//{
+		if (!UseLateUpdate)
+		{
+			UpdateCamera(Time.fixedDeltaTime);
+		}
+	}
 
-		transform.position = Vector3.Lerp(transform.position, Target.position + Target.TransformDirection(Offset), Time.deltaTime * CatchupTime);
-		//}
-
-		var d = Target.position - transform.position;
-		transform.rotation = Quaternion.LookRotation(d);
+	void LateUpdate()
+	{
+		if (UseLateUpdate)
+		{
+			UpdateCamera(Time.deltaTime);
+		}
 	}
 }

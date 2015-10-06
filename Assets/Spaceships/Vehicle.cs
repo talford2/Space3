@@ -18,6 +18,7 @@ public class Vehicle : MonoBehaviour
 	public float MouseXSensitivity = 100f;
 	public float MouseYSensitivity = 100f;
 
+	public float TimeMultiplier = 1;
 	#endregion
 
 	private float Speed = 0;
@@ -26,51 +27,56 @@ public class Vehicle : MonoBehaviour
 	private float pitch = 0;
 	private float roll;
 
-	void Start()
-	{
+	void Start() { }
 
+	public void Update()
+	{
+		Drive(Time.deltaTime * TimeMultiplier);
 	}
 
-	void Update()
+	void Drive(float t)
 	{
 		// Forward backward
 		if (Input.GetAxis("Vertical") > 0.5)
 		{
-			Speed += Acceleration * Time.deltaTime;
+			Speed += Acceleration * t;
 		}
 		else if (Input.GetAxis("Vertical") < -0.5)
 		{
-			Speed -= Brake * Time.deltaTime;
+			Speed -= Brake * t;
 		}
 		else
 		{
-			Speed -= NaturalDecelleration * Time.deltaTime;
+			Speed -= NaturalDecelleration * t;
 		}
 		Speed = Mathf.Clamp(Speed, IdleSpeed, MaxSpeed);
 
-
 		// Roll
-		//Input.GetAxis("Horizontal");
-		//roll += 8 * Time.deltaTime;
+		Input.GetAxis("Horizontal");
+		roll += 8 * t;
 		//transform.rotation = Quaternion.AngleAxis(roll, transform.forward);
 
 		// Mouse Steering
 		var mx = Input.GetAxis("Mouse X");
 		var my = Input.GetAxis("Mouse Y");
 
-		yaw += MouseXSensitivity * mx * Time.deltaTime;
-		pitch -= MouseYSensitivity * my * Time.deltaTime;
+		yaw += MouseXSensitivity * mx * t;
+		pitch -= MouseYSensitivity * my * t;
+		//yaw += MouseXSensitivity * Mathf.Cos(Time.deltaTime * Mathf.Deg2Rad * 1);// * t;
+		//pitch -= MouseYSensitivity * 1f * t;
 
 
-		roll = MouseXSensitivity * mx * Time.deltaTime * -40;
+		roll = MouseXSensitivity * mx * t * -40;
 		//roll -= Time.deltaTime;
 
 		//transform.Rotate(0, yaw, 0);
 
+		//transform.rotation = Quaternion.AngleAxis(yaw, Vector3.up);
+
 		transform.rotation = Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(pitch, Vector3.right);
 		//transform.rotation *= Quaternion.AngleAxis(roll, Vector3.forward);
 
-		transform.position += transform.forward * Speed;
+		transform.position += transform.forward * Speed * t;
 
 		if (Input.GetKeyDown(KeyCode.LeftControl))
 		{
