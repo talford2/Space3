@@ -18,14 +18,23 @@ public class Vehicle : MonoBehaviour
 	public float MouseXSensitivity = 100f;
 	public float MouseYSensitivity = 100f;
 
+	public float RollAcceleration = 100f;
+
 	public float TimeMultiplier = 1;
+
+	public float BankingRestore = 3f;
 	#endregion
 
 	private float Speed = 0;
 
 	private float yaw = 0;
 	private float pitch = 0;
-	private float roll;
+	private float roll = 0;
+
+
+	private float rollSpeed = 0;
+
+	private float bank = 0;
 
 	void Start() { }
 
@@ -50,33 +59,63 @@ public class Vehicle : MonoBehaviour
 			Speed -= NaturalDecelleration * t;
 		}
 		Speed = Mathf.Clamp(Speed, IdleSpeed, MaxSpeed);
-
-		// Roll
-		Input.GetAxis("Horizontal");
-		roll += 8 * t;
-		//transform.rotation = Quaternion.AngleAxis(roll, transform.forward);
+		transform.position += transform.forward * Speed * t;
 
 		// Mouse Steering
-		var mx = Input.GetAxis("Mouse X");
-		var my = Input.GetAxis("Mouse Y");
+		//var mx = Input.GetAxis("Mouse X");
+		//var my = Input.GetAxis("Mouse Y");
 
-		yaw += MouseXSensitivity * mx * t;
-		pitch -= MouseYSensitivity * my * t;
-		//yaw += MouseXSensitivity * Mathf.Cos(Time.deltaTime * Mathf.Deg2Rad * 1);// * t;
-		//pitch -= MouseYSensitivity * 1f * t;
+		var pitch = Input.GetAxis("Mouse Y") * -1;
+		//if (Input.GetKey(KeyCode.W)) { pitch = 1; }
+		//if (Input.GetKey(KeyCode.S)) { pitch = -1; }
 
 
-		roll = MouseXSensitivity * mx * t * -40;
-		//roll -= Time.deltaTime;
+		//var roll = 0f;
+		if (Input.GetKey(KeyCode.A))
+		{
+			rollSpeed += RollAcceleration * Time.deltaTime;
+			roll = 1;
 
-		//transform.Rotate(0, yaw, 0);
+			//roll = Mathf.Lerp(roll, 1, Time.deltaTime * 1000);
+		}
+		if (Input.GetKey(KeyCode.D))
+		{
+			rollSpeed -= RollAcceleration * Time.deltaTime;
+			roll = -1;
+		}
 
-		//transform.rotation = Quaternion.AngleAxis(yaw, Vector3.up);
+		if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
+		{
+			roll *= (1 - Time.deltaTime * 3f);
+		}
 
-		transform.rotation = Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(pitch, Vector3.right);
-		//transform.rotation *= Quaternion.AngleAxis(roll, Vector3.forward);
+		//roll = rollSpeed * Time.deltaTime * RollAcceleration;
 
-		transform.position += transform.forward * Speed * t;
+		var yaw = Input.GetAxis("Mouse X");
+		//if (Input.GetKey(KeyCode.Q)) { yaw = 1; }
+		//if (Input.GetKey(KeyCode.E)) { yaw = -1; }
+
+		Debug.Log("roll = " + roll);
+
+		// Rotation transforms
+		transform.rotation *= Quaternion.AngleAxis(MouseYSensitivity * pitch * t, Vector3.right);// transform.right);
+																								 //transform.rotation *= Quaternion.AngleAxis(MouseXSensitivity * mx * t, transform.up);
+		transform.rotation *= Quaternion.AngleAxis(150 * roll * t, Vector3.forward);
+
+		transform.rotation *= Quaternion.AngleAxis(MouseXSensitivity * yaw * t, Vector3.up);
+
+
+		Debug.DrawRay(transform.position, transform.forward * 5f, Color.red);
+
+		//transform.rotation = Quaternion.AngleAxis(pitch, transform.right);
+		//transform.rotation = Quaternion.AngleAxis(roll, transform.forward);
+
+		//transform.rotation = Quaternion.AngleAxis(roll, transform.forward);
+		//transform.rotation *= Quaternion.AngleAxis(pitch, Vector3.right);
+		//transform.rotation *= Quaternion.AngleAxis(yaw, Vector3.up);
+
+		//transform.rotation *= Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(pitch, Vector3.right);
+		//transform.rotation *= Quaternion.AngleAxis(bank, Vector3.forward);
 
 		if (Input.GetKeyDown(KeyCode.LeftControl))
 		{

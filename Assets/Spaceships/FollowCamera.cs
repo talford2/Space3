@@ -9,6 +9,8 @@ public class FollowCamera : MonoBehaviour
 
 	public float CatchupTime = 1f;
 
+	public float TurnSmoothing = 30f;
+
 	public bool UseSphereLerp = false;
 
 	public bool UseLateUpdate = false;
@@ -28,17 +30,17 @@ public class FollowCamera : MonoBehaviour
 		{
 			transform.position = Vector3.Lerp(transform.position, Target.position + Target.TransformDirection(Offset), t * CatchupTime);
 		}
-
-		//var d = Target.position - transform.position;
-		//transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(d), Time.deltaTime * 1);
-		transform.LookAt(Target);
+		
+		var relativePosition = Target.position - transform.position;
+		var targetRotation = Quaternion.LookRotation(relativePosition);
+		transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * CatchupTime);
 	}
 
 	void Update()
 	{
 		if (!UseLateUpdate)
 		{
-			UpdateCamera(Time.fixedDeltaTime);
+			UpdateCamera(Time.deltaTime);
 		}
 	}
 
